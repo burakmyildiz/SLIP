@@ -2,10 +2,8 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-g = 9.81
-m = 0.5
-k = 1
-h0 = 1.0
+params = {"k": 200.0, "m": m, "h0": ho, "g": g}
+# k = 1
 h_max = 1.5
 import matplotlib.pyplot as plt
 
@@ -14,10 +12,10 @@ def flight_phase_rule(t, state):
     h_dotdot = -g
     return [hdot, h_dotdot]
 
-def stance_phase_rule(t, state):
+def stance_phase_rule(t, state, params):
     h, hdot = state
-    h_dotdot = (k/m) * (h0-h) - g
-    return [hdot, h_dotdot]
+    k, m, h0, g = params["k"], params["m"], params["h0"], params["g"]
+    return [hdot, (k/m) * (h0-h) - g]
 
 def touchdown_detection_event(t, state):
     h, hdot = state
@@ -26,6 +24,13 @@ def touchdown_detection_event(t, state):
 def liftoff_detection_event(t, state):
     h, hdot = state
     return h - h0
+
+def bottom_detection_event(t, state):
+    h, hdot = state
+    return hdot
+
+bottom_detection_event.terminal = True
+bottom_detection_event.direction = 1 # from - to +
 
 touchdown_detection_event.terminal = True
 touchdown_detection_event.direction = -1
@@ -49,10 +54,35 @@ def main():
 
     while t < total_time:
         if current_phase == 'flight':
-            sol = solve_ivp(flight_phase_rule, [t, total_time], current_state, events=touchdown_detection_event, dense_output=True)
-            current_phase = 'stance'
-        elif current_phase == 'stance':
-            sol = solve_ivp(stance_phase_rule, [t, total_time], current_state, events=liftoff_detection_event, dense_output=True)
+            sol = solve_ivp(
+                    flight_phase_rule,
+                    [t, total_time],
+                    current_state,
+                    events=touchdown_detection_event,
+                    dense_output=True
+                )
+            current_phase = 'stance_compression'
+
+        elif current_phase == 'stance_compression':
+            sol = solve_ivp(
+                    lambda tt, yy: stance_phase_rule(tt, yy, params), 
+                    [t, total_time], 
+                    current_state, 
+                    events=bottom_detection_event, 
+                    dense_output=True
+                )
+            print("Hit bottom! Boosting spring stiffness.")
+            params["k"] = 400.0
+            current_phase = 'stance_decompression'
+
+        elif current_phase == 'stance_decompression':
+            sol = solve_ivp(
+                    lambda tt, yy: stance_phase_rule(tt, yy, params), 
+                    [t, total_time], 
+                    current_state, 
+                    events=liftoff_detection_event, 
+                    dense_output=True
+                )
             current_phase = 'flight'
 
         plot_times = np.linspace(sol.t[0], sol.t[-1], 100)
