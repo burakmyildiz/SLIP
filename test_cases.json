@@ -1,0 +1,47 @@
+[
+  {
+    "name": "baseline",
+    "m": 10.0,
+    "h0": 2.0,
+    "g": 9.81,
+    "k_initial": 200.0,
+    "k_final": 400.0,
+    "h_max": 3.0
+  },
+  {
+    "name": "stiff_spring",
+    "m": 10.0,
+    "h0": 2.0,
+    "g": 9.81,
+    "k_initial": 1000.0,
+    "k_final": 2000.0,
+    "h_max": 3.0
+  },
+  {
+    "name": "light_mass",
+    "m": 5.0,
+    "h0": 2.0,
+    "g": 9.81,
+    "k_initial": 200.0,
+    "k_final": 400.0,
+    "h_max": 3.0
+  },
+  {
+    "name": "heavy_mass",
+    "m": 20.0,
+    "h0": 2.0,
+    "g": 9.81,
+    "k_initial": 200.0,
+    "k_final": 400.0,
+    "h_max": 3.0
+  },
+  {
+    "name": "high_drop",
+    "m": 10.0,
+    "h0": 2.0,
+    "g": 9.81,
+    "k_initial": 200.0,
+    "k_final": 400.0,
+    "h_max": 5.0
+  }
+]
